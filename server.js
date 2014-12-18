@@ -52,9 +52,6 @@ module.exports = function(cms){
   };
 
 //# Public declarations and exports:
-  ext.dummy = function(opts, cb){
-    // a dummy method here...
-  }
   
   return ext;
 }
