@@ -48,6 +48,7 @@ module.exports = function(nce){
     delete middlewares.cookies;
     delete middlewares.compression;
     delete middlewares.session;
+    delete ext.logger;
   });
   
   ext.on("activate", function(event){
