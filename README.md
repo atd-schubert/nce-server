@@ -8,6 +8,7 @@ Install with npm: `npm install --save nce-server`
 Integrate in NCE:
 
 ```
+var fs = require("fs");
 var NCE = require("nce");
 var nce = new NCE(/*{
   server:{
@@ -15,7 +16,16 @@ var nce = new NCE(/*{
     disableCookieParser: false,
     disableSession: false,
     sessionSecret: "if not specified the extension create a random one",
-    ext.config.port: 3000
+    http:{
+      port: 3000,
+      disabled: false
+    },
+    https:{
+      port: 3001,
+      key: fs.readSync("path/to/key"),
+      cert: fs.readSync("path/to/cert"),
+      disabled: false
+    }
   }
 }*/);
 var server = require("nce-server");
@@ -28,9 +38,3 @@ Or use nce-extension-manager...
 
 ## How to use
 Just configure this extension and activate it after that.
-
-## Todos
-* Implement SSL
-
-## Note
-This extension can not be deactivated or uninstalled!
