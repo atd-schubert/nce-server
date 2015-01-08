@@ -1,6 +1,6 @@
 # NCE server extension
 ## Description
-A server extension for nce cms based on express.
+A server extension for nce.
 
 ## How to install
 Install with npm: `npm install --save nce-server`
@@ -10,6 +10,7 @@ Integrate in NCE:
 ```
 var fs = require("fs");
 var NCE = require("nce");
+var ExtMgr = require("nce-extension-manager");
 var nce = new NCE(/*{
   server:{
     disableCompression: false,
@@ -28,13 +29,13 @@ var nce = new NCE(/*{
     }
   }
 }*/);
-var server = require("nce-server");
-var ext = server(nce);
-ext.install();
-ext.activate();
-```
 
-Or use nce-extension-manager...
+extMgr = require("nce-extension-manager")(nce);
+extMgr.activateExtension(extMgr);
+
+extMgr.getActivatedExtension("server");
+
+```
 
 ## How to use
 Just configure this extension and activate it after that.
