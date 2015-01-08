@@ -14,8 +14,7 @@
     "cms",
     "nce",
     "middleware",
-    "server",
-    "express"
+    "server"
   ],
   "author": "Arne Schubert <atd.schubert@gmail.com>",
   "license": "ISC",
@@ -30,10 +29,12 @@
   },
   "devDependencies": {
     "freeport": "^1.0.3",
-    "nce": ">=0.0.1",
-    "nce-winston": ">=0.0.1"
+    "nce": ">=0.1.0",
+    "nce-winston": ">=0.0.2",
+    "nce-extension-manager": ">=0.0.1"
   },
   "peerDependencies": {
+    "nce": ">=0.1.0",
     "nce-winston": ">=0.0.2"
   }
 }

@@ -2,6 +2,7 @@
 
 var http = require("http");
 var https = require("https");
+var url = require("url");
 
 module.exports = function(nce){
   if(!nce) throw new Error("You have to specify the nce object");
@@ -29,6 +30,7 @@ module.exports = function(nce){
     if(!ext.config.https.key || !ext.config.https.cert) ext.config.https.disabled = true;
     ext.config.https.disabled = ext.config.https.disabled || false;
 
+    ext.config.disableParseQuery = ext.config.disableParseQuery || false;
     ext.config.disableCompression = ext.config.disableCompression || false;
     ext.config.disableCookieParser = ext.config.disableCookieParser || false;
     ext.config.disableSession = ext.config.disableSession || false;
@@ -39,6 +41,22 @@ module.exports = function(nce){
     middlewares.cookies = require("cookie-parser")();
     middlewares.compression = require('compression')();
     middlewares.session = require("express-session")({ secret: ext.config.sessionSecret, resave: ext.config.sessionResave, saveUninitialized: true });
+    middlewares.parseQuery = function(req, res, next){
+      var tmp = url.parse(req.url).query;
+      var query = {};
+      var i;
+      var tmp;
+      
+      if(tmp) {
+        queries = tmp.split("&");
+        for (i=0; i<queries.length; i++) {
+          tmp = queries[i].split("=");
+          query[tmp[0]] = tmp[1];
+        }
+      }
+      req.query = query;
+      next();
+    }
   });
   
   ext.on("uninstall", function(event){ // undo installation
@@ -48,10 +66,14 @@ module.exports = function(nce){
     delete middlewares.cookies;
     delete middlewares.compression;
     delete middlewares.session;
+    delete middlewares.parseQuery;
     delete ext.logger;
   });
   
   ext.on("activate", function(event){
+    if(!ext.config.disableParseQuery && nce.requestMiddlewares.indexOf(middlewares.parseQuery) === -1) {
+		  nce.requestMiddlewares.push(middlewares.parseQuery);
+	  }
     if(!ext.config.disableCompression && nce.requestMiddlewares.indexOf(middlewares.compression) === -1) {
 		  nce.requestMiddlewares.push(middlewares.compression);
 	  }
@@ -64,17 +86,33 @@ module.exports = function(nce){
     
     if(!ext.config.http.disabled) {
       servers.http = http.createServer(nextedCallback(nce.middleware)).listen(ext.config.http.port, function(){
+        ext.emit("http:listen");
         ext.logger.info("NCE server is listening with http on port " + ext.config.http.port + ".");
       });
     }
     if(!ext.config.https.disabled) {
       servers.https = https.createServer({key: ext.config.https.key, cert: ext.config.https.cert}, nextedCallback(nce.middleware)).listen(ext.config.https.port, function(){
+        ext.emit("https:listen");
         ext.logger.info("NCE server is listening with https on port " + ext.config.https.port + ".");
       });
     }
   });
   
   ext.on("deactivate", function(event){ // undo activation
+    
+	  if(nce.requestMiddlewares.indexOf(middlewares.parseQuery) !== -1) {
+		  nce.requestMiddlewares.splice(nce.requestMiddlewares.indexOf(middlewares.parseQuery), 1);
+	  }
+	  if(nce.requestMiddlewares.indexOf(middlewares.compression) !== -1) {
+		  nce.requestMiddlewares.splice(nce.requestMiddlewares.indexOf(middlewares.compression), 1);
+	  }
+	  if(nce.requestMiddlewares.indexOf(middlewares.cookies) !== -1) {
+		  nce.requestMiddlewares.splice(nce.requestMiddlewares.indexOf(middlewares.cookies), 1);
+	  }
+	  if(nce.requestMiddlewares.indexOf(middlewares.session) !== -1) {
+		  nce.requestMiddlewares.splice(nce.requestMiddlewares.indexOf(middlewares.session), 1);
+	  }
+	  
     if(servers.http) servers.http._handle.close(function(){
       ext.logger.info("NCE http server stopped.");
       delete servers.http;
